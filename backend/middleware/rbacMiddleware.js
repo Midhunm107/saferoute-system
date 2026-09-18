@@ -1,4 +1,13 @@
-// Role-based access control guard, e.g. rbacMiddleware('ADMIN'). Implemented in Phase 2
-// (Auth & RBAC) — see README section 6.
+// Role guard — usage: router.get('/x', protect, rbacMiddleware('POLICE', 'ADMIN'), handler).
+// Must run after authMiddleware's `protect` so req.user is already populated.
 
-module.exports = {};
+const AppError = require('../utils/AppError');
+
+const rbacMiddleware = (...allowedRoles) => (req, res, next) => {
+  if (!allowedRoles.includes(req.user?.role)) {
+    return next(new AppError(403, 'You do not have permission to perform this action'));
+  }
+  next();
+};
+
+module.exports = rbacMiddleware;
