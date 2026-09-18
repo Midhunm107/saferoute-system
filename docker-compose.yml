@@ -1,17 +1,16 @@
 services:
-  postgres:
-    image: postgis/postgis:15-3.4
+  mongo:
+    image: mongo:7
+    container_name: saferoute-mongo
     restart: unless-stopped
     environment:
-      POSTGRES_USER: saferoute
-      POSTGRES_PASSWORD: saferoute
-      POSTGRES_DB: saferoute
+      MONGO_INITDB_DATABASE: saferoute
     ports:
-      - '5432:5432'
+      - '27017:27017'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U saferoute -d saferoute']
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,13 +19,13 @@ services:
     build: ./backend
     restart: unless-stopped
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
     environment:
       PORT: 5000
       NODE_ENV: development
       CLIENT_ORIGIN: http://localhost:5173
-      DATABASE_URL: postgresql://saferoute:saferoute@postgres:5432/saferoute
+      MONGODB_URI: mongodb://mongo:27017/saferoute
     ports:
       - '5000:5000'
     volumes:
@@ -49,4 +48,4 @@ services:
       - /app/node_modules
 
 volumes:
-  postgres_data:
+  mongo_data:

@@ -1,5 +1,6 @@
 // SafeRoute backend entry point.
-// Phase 0 (Scaffolding): just enough to boot the server and answer a health check.
+// Phase 0 (Scaffolding) + Phase 1 (Database & Models): boot the server, connect to MongoDB,
+// and answer a health check that reflects real DB reachability.
 // Routers/controllers/middleware get wired in as each later phase implements them —
 // see README section 6.
 
@@ -10,6 +11,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const logger = require('./utils/logger');
+const { connectDB } = require('./config/db');
+const healthRoutes = require('./routes/healthRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,17 +22,15 @@ app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      status: 'ok',
-      service: 'saferoute-backend',
-      timestamp: new Date().toISOString(),
-    },
-  });
-});
+app.use('/api', healthRoutes);
 
-app.listen(PORT, () => {
-  logger.info(`SafeRoute backend listening on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      logger.info(`SafeRoute backend listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    logger.error('Failed to connect to MongoDB, exiting:', err.message);
+    process.exit(1);
+  });

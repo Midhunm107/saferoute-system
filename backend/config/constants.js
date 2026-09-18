@@ -1,4 +1,8 @@
-// Shared constants for the backend.
-// Populated as later phases need them (hotspot tiers, roles, etc.) — see README section 6.
+// Shared constants for the backend — see README section 4 (Data Models).
 
-module.exports = {};
+module.exports = {
+  ROLES: ['CITIZEN', 'POLICE', 'AMBULANCE', 'ADMIN'],
+  SEVERITY: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+  REPORT_STATUS: ['PENDING', 'VERIFIED', 'REJECTED'],
+  HOTSPOT_TIER: ['GREEN', 'YELLOW', 'ORANGE', 'RED'],
+};
